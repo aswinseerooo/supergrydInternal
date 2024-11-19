@@ -1,0 +1,77 @@
+/* 
+  Localizable.strings
+  
+
+  Created by Aswin V Shaji on 05/11/24.
+  
+*/
+
+// de.lproj/Localizable.strings
+"where_are_you_going_today" = "Wohin gehst du heute?";
+"pick_up" = "Abholen";
+"where_from" = "Woher?";
+"drop_off" = "Rückgabeort";
+"where_to" = "Wohin?";
+"recent_places" = "Letzte Orte";
+"plan_your_ride" = "Planen Sie Ihre Fahrt";
+"set_location_on_map" = "Standort auf Karte festlegen";
+"set_your_destination" = "Legen Sie Ihr Ziel fest";
+"drag_the_map_to_move_the_pin" = "Ziehen Sie die Karte, um die Stecknadel zu verschieben";
+"confirm_destination" = "Ziel bestätigen";
+"payment_methods" = "Zahlungsarten";
+"cash" = "Kasse";
+"online" = "Online";
+"submit" = "Einreichen";
+"gathering_options" = "Sammeloptionen";
+"choose_your_ride" = "Wählen Sie Ihr Fahrzeug";
+"pay_using" = "Bezahlen mit";
+"seats" = "Sitze";
+"request" = "Anfrage";
+"finding_your_ride" = "Finden Sie Ihr Fahrzeug";
+"pick_up_in_6_min" = "Abholung in 6 min";
+"your_ride_is_on_the_way" = "Ihre Fahrt ist unterwegs";
+"your_ride_is_here" = "Ihre Fahrt ist da";
+"cancel" = "Stornieren";
+"ongoing_ride" = "Weitere Fahrt";
+"5_min_away_from_destination" = "5 Minuten vom Ziel entfernt";
+"pin_for_this_trip" = "PIN für diese Reise";
+"ride_details" = "Fahrtdetails";
+"experience" = "Erfahrung";
+"total_rides" = "Fahrten insgesamt";
+"payment_method" = "Zahlungsmethode";
+"total_price" = "Gesamtpreis";
+"expected_a_shorter_wait_time" = "Erwartet kürzere Wartezeit";
+"unable_to_contact_the_driver" = "Der Fahrer kann nicht kontaktiert werden";
+"driver_denied_duty" = "Fahrer wird die Pflicht verweigert";
+"cab_is_not_moving_in_my_direction" = "Das Taxi bewegt sich nicht in meine Richtung";
+"my_reason_is_not_listed" = "Mein Grund ist nicht aufgeführt";
+"cancel_booking" = "Buchung stornieren";
+"please_select_the_reason_for_cancellation" = "Bitte wählen Sie den Grund für die Stornierung aus";
+"other" = "Andere";
+"enter_your_reason" = "Geben Sie Ihren Grund ein";
+"cancel_ride" = "Fahrt stornieren";
+"please_select_or_provide_a_reason_for_cancellation" = "Bitte wählen Sie einen Stornierungsgrund aus oder geben Sie ihn ein";
+"ok" = "OK";
+"do_you_want_to_cancel_the_ride" = "Möchten Sie die Fahrt stornieren?";
+"you_won't_be_charged_a_cancellation_fee" = "Es fallen keine Stornierungsgebühren an";
+"you_may_be_charged_a_cancellation_fee" = "Möglicherweise wird Ihnen eine Stornierungsgebühr berechnet";
+"no" = "NEIN";
+"go_back" = "Geh zurück";
+"yes_cancel" = "Ja,Abbrechen";
+"cancel_trip" = "Reise stornieren";
+"ride_completed" = "Fahrt abgeschlossen";
+"your_trip_fare" = "Ihr Reisepreis";
+"payment_option" = "Zahlungsmöglichkeit";
+"booking_history" = "Buchungsverlauf";
+"rate_this_ride" = "Bewerten Sie diese Fahrt";
+"recommended_services" = "Empfohlene Services";
+"close" = "Schließen";
+"rating" = "Bewertungen";
+"how_was_your_trip" = "Wie war Ihre Reise?";
+"your_feedback_will_help_improve_our_services" = "Ihr Feedback hilft uns, unsere Dienste zu verbessern";
+"additional_comments" = "Zusätzliche Kommentare ...";
+"submit_review" = "Bewertung abschicken";
+"try_again" = "Versuchen Sie es erneut";
+"ride_not_found" = "Fahrt nicht gefunden";
+"please_try_again_in_a_few_minutes" = "Bitte versuchen Sie es in ein paar Minuten noch einmal";
+"min" = "min";

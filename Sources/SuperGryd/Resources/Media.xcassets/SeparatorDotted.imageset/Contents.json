@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "SperatorDotted.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "taxiUnselected.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
