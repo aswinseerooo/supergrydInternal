@@ -11,10 +11,15 @@ import SVGView
 struct LocationSelectionExpandedSheet: View {
 
     @ObservedObject var viewModel: LocationSelectingViewModel
+    @FocusState private var focusedField: FocusField?
+
+    enum FocusField: Hashable {
+        case fromLocation
+        case toLocation
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Display total distance covered
             HStack {
                 Image(systemName: "arrow.backward")
                     .frame(width: 30, height: 30)
@@ -48,19 +53,33 @@ struct LocationSelectionExpandedSheet: View {
                                 .font(.body)
                                 .foregroundColor(.secondary)
                         }
-                        TextField("", text: $viewModel.fromLocation)
-                            .font(.headline.weight(.semibold))
-                            .onTapGesture {
-                                viewModel.forDestinationLocation = false
-                            }
-                            .onChange(of: viewModel.fromLocation) { newText in
-                                if newText.count >= 2 {
-                                    viewModel.fetchAutocompleteSuggestions(for: newText)
-                                } else {
-                                    viewModel.suggestions.removeAll()
+                        HStack {
+                            TextField("", text: $viewModel.fromLocation)
+                                .font(.headline.weight(.semibold))
+                                .focused($focusedField, equals: .fromLocation)
+                                .onTapGesture {
+                                    viewModel.forDestinationLocation = false
+                                }
+                                .onChange(of: viewModel.fromLocation) { newText in
+                                    if newText.count >= 2 {
+                                        viewModel.fetchAutocompleteSuggestions(for: newText)
+                                    } else {
+                                        viewModel.suggestions.removeAll()
+                                    }
+                                }
+                            
+                            // Clear Button
+                            if !viewModel.fromLocation.isEmpty {
+                                Button(action: {
+                                    viewModel.fromLocation = ""
+                                }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.secondary)
                                 }
                             }
+                        }
                     }
+
                     Rectangle()
                         .frame(height: 1)
                         .foregroundStyle(.secondary)
@@ -75,18 +94,31 @@ struct LocationSelectionExpandedSheet: View {
                                 .font(.body)
                                 .foregroundColor(.secondary)
                         }
-                        TextField("", text: $viewModel.toLocation)
-                            .font(.headline.weight(.semibold))
-                            .onTapGesture {
-                                viewModel.forDestinationLocation = true
-                            }
-                            .onChange(of: viewModel.toLocation) { newText in
-                                if newText.count >= 2 {
-                                    viewModel.fetchAutocompleteSuggestions(for: newText)
-                                } else {
-                                    viewModel.suggestions.removeAll()
+                        HStack {
+                            TextField("", text: $viewModel.toLocation)
+                                .font(.headline.weight(.semibold))
+                                .focused($focusedField, equals: .toLocation)
+                                .onTapGesture {
+                                    viewModel.forDestinationLocation = true
+                                }
+                                .onChange(of: viewModel.toLocation) { newText in
+                                    if newText.count >= 2 {
+                                        viewModel.fetchAutocompleteSuggestions(for: newText)
+                                    } else {
+                                        viewModel.suggestions.removeAll()
+                                    }
+                                }
+                            
+                            // Clear Button
+                            if !viewModel.toLocation.isEmpty {
+                                Button(action: {
+                                    viewModel.toLocation = ""
+                                }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.secondary)
                                 }
                             }
+                        }
                     }
                 }
             }
@@ -124,6 +156,10 @@ struct LocationSelectionExpandedSheet: View {
         }
         .background(Color(.systemBackground))
         .cornerRadius(20)
+        .onAppear {
+            // Set the initial focus based on forDestinationLocation
+            focusedField = viewModel.forDestinationLocation ? .toLocation : .fromLocation
+        }
     }
 }
 

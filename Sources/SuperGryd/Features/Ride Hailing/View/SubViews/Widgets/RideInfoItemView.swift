@@ -8,16 +8,16 @@
 import SwiftUI
 
 struct RideInfoItemView: View {
-    let distance: String 
-    let time: String
-    let date: String
-    let price: String
+    let distance: Text
+    let time: Text
+    let date: Text
+    let price: Text
     let isRideCompletedView: Bool
     init(
-        distance: String,
-        time: String,
-        date: String = "",
-        price: String = "",
+        distance: Text,
+        time: Text,
+        date: Text = Text(""),
+        price: Text = Text(""),
         isRideCompletedView: Bool = false
     ) {
         self.distance = distance
@@ -28,7 +28,7 @@ struct RideInfoItemView: View {
     }
     var body: some View {
         HStack{
-            isRideCompletedView && !date.isEmpty ? RideInfoSingleItemView(imageName: "CalendarIcon", text: date) :
+            isRideCompletedView && !(date == Text("")) ? RideInfoSingleItemView(imageName: "CalendarIcon", text: date) :
             RideInfoSingleItemView(imageName: "distanceCircle", text: distance)
             Spacer()
             RideInfoSingleItemView(imageName: "clock", text: time)
@@ -39,5 +39,5 @@ struct RideInfoItemView: View {
     }
 }
 #Preview {
-    RideInfoItemView(distance: "", time: "")
+    RideInfoItemView(distance: Text(""), time: Text(""))
 }

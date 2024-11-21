@@ -22,23 +22,25 @@ struct RideBookingResponse: Codable {
 // MARK: - DataClass
 struct RideBookingData: Codable {
     let id, uniqueID, userID, serviceCategoryID: String?
-        let originAddress, destinationAddress: [NAddress]?
-        let status: Int?
-        let requestedTime: String?
-        let requestedID: Int?
-        let startTime, endTime: JSONNull?
-        let estimatedPrice: Double?
-        let driverID: JSONNull?
-        let driverDetails, vehicleDetails: [JSONAny]?
-        let serviceProviderID: String?
-        let otp: JSONNull?
-        let hostID, cancelReason: String?
-        let cancelReasonID: Int?
-        let duration, distance, ridehailProduct: JSONNull?
-        let rideReview: [JSONAny]?
-        let v: Int?
+    let originAddress, destinationAddress: [NAddress]?
+    let status: Int?
+    let requestedTime: String?
+    let requestedID: Int?
+    let startTime, endTime: JSONNull?
+    let estimatedPrice: Double?
+    let driverID: JSONNull?
+    let driverDetails: [DriverDetails]?
+    let vehicleDetails: [Vehicle]?
+    let serviceProviderID: String?
+    let otp: Int?
+    let hostID, cancelReason: String?
+    let cancelReasonID: Int?
+    let duration, distance, ridehailProduct: JSONNull?
+    let rideReview: [JSONAny]?
+    let v: Int?
 
     enum CodingKeys: String, CodingKey {
+        case id = "_id"
         case uniqueID = "unique_id"
         case userID = "user_id"
         case serviceCategoryID = "service_category_id"
@@ -60,7 +62,6 @@ struct RideBookingData: Codable {
         case cancelReasonID = "cancel_reason_id"
         case duration, distance
         case ridehailProduct = "ridehail_product"
-        case id = "_id"
         case rideReview = "ride_review"
         case v = "__v"
     }

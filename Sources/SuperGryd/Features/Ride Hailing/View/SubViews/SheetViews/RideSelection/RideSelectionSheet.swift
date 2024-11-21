@@ -56,16 +56,16 @@ struct RideSelectionSheet: View {
                 }
                 VStack {
                     if viewModel.isLoading {
-                        RideInfoItemView(distance: "21 km", time: rideOptionsMockData[viewModel.selectedRideIndex ?? 0].expectedArrivalTime, price: rideOptionsMockData[viewModel.selectedRideIndex ?? 0].price)
+                        RideInfoItemView(distance: Text("21 km"), time:Text( (rideOptionsMockData[viewModel.selectedRideIndex ?? 0].expectedArrivalTime)), price:Text( rideOptionsMockData[viewModel.selectedRideIndex ?? 0].price))
                             .padding(.horizontal,40)
                             .padding(.vertical,8)
                     } else {
                         if let index = viewModel.selectedRideIndex, viewModel.rideOptions.indices.contains(index) {
                             let selectedOption = viewModel.rideOptions[index]
                             RideInfoItemView(
-                                distance: "\(selectedOption.estimation?.distance ?? 0) km",
-                                time: "\((selectedOption.estimation?.duration ?? 0) / 60) min",
-                                price: "\(selectedOption.estimation?.estimate ?? 0)"
+                                distance: Text("\(selectedOption.estimation?.distance ?? 0, specifier: "%.2f") km"),
+                                time: Text("\((selectedOption.estimation?.duration ?? 0) / 60) min"),
+                                price: Text("\(selectedOption.estimation?.estimate ?? 0, specifier: "%.2f")")
                             )
                             .padding(.horizontal,40)
                             .padding(.vertical,8)
@@ -133,6 +133,7 @@ struct RideSelectionSheet: View {
                 .padding(.bottom)
                 .onTapGesture {
                     if !viewModel.isLoading{
+                        locationViewModel.selectedPaymentMethod = viewModel.paymentOption
                         locationViewModel.navigationPath.append("RideView")
                     }
                 }

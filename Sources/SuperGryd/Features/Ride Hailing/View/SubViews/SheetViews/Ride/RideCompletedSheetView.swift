@@ -9,9 +9,8 @@ import SwiftUI
 
 struct RideCompletedSheetView: View {
     @Environment(\.colorScheme) var colorScheme
-    @State private var fromLocation = "Sonnenweg 32, 79669 Berlin, Germany"
-    @State private var toLocation = "St.-Martin-Straße 14, 93099 Berlin,Germany"
-    @Binding var navigationPath: [String]
+    @ObservedObject var viewModel: RideViewModel
+    @ObservedObject var locationViewModel: LocationSelectingViewModel
     var body: some View {
         ScrollView{
         VStack() {
@@ -21,31 +20,42 @@ struct RideCompletedSheetView: View {
                 .font(.title3)
                 .fontWeight(.bold)
                 .padding(8)
-            Text("ID123456789")
+            Text("ID\(viewModel.rideTrackingResponse?.requestID ?? "")")
                 .font(.headline)
                 .foregroundStyle(Color(hex: "#663A80"))
                 .padding(.bottom)
             Divider()
                 .padding(.horizontal, 20)
-            RideInfoItemView(distance: "21 km", time: "07:48AM",date: "28 Nov 2024",isRideCompletedView: true)
+            RideInfoItemView(
+                distance: Text("\(locationViewModel.selectedRide?.estimation?.distance ?? 0, specifier: "%.2f") km"),
+                time: Text(viewModel.currentTime ?? ""),
+                date: Text(viewModel.currentDate ?? ""),
+                isRideCompletedView: true
+            )
                 .padding(.horizontal,20)
                 .padding(.vertical,5)
             Divider()
                 .padding(.horizontal, 20)
-            PickupDropoffStepperView(fromLocation: $fromLocation, toLocation: $toLocation)
+            PickupDropoffStepperView(fromLocation: $locationViewModel.fromLocation, toLocation: $locationViewModel.toLocation)
             HStack{
                 HStack{
-                    Image("profile", bundle: Bundle.module)
-                        .resizable()
-                        .frame(width: 50,height: 50)
+                    AsyncImage(url: URL(string: viewModel.rideTrackingResponse?.driverDetails?.pictureURL ?? "")) { image in
+                        image
+                            .resizable() // Ensure the image is resizable
+                            .scaledToFit() // Scale the image to fit within the frame
+                    } placeholder: {
+                        ProgressView() // Optional placeholder while the image is loading
+                    }
+                    .frame(width: 50, height: 50)
+                    .clipShape(Circle())
                     VStack(alignment: .leading){
-                        Text("Henry")
+                        Text(viewModel.rideTrackingResponse?.driverDetails?.name ?? "")
                             .font(.footnote)
                             .fontWeight(.semibold)
-                        Text("KA15AAC21-00")
+                        Text(viewModel.rideTrackingResponse?.vehicle?.licensePlate ?? "")
                             .font(.footnote)
                             .fontWeight(.light)
-                        Text("White Suzuki")
+                        Text(viewModel.rideTrackingResponse?.vehicle?.make ?? "")
                             .font(.footnote)
                             .fontWeight(.light)
                     }
@@ -62,10 +72,10 @@ struct RideCompletedSheetView: View {
                             .fontWeight(.light)
                     }
                     VStack(alignment: .leading){
-                        Text("$8.00")
+                        Text("\(locationViewModel.selectedRide?.estimation?.estimate ?? 0, specifier: "%.2f") \(locationViewModel.selectedRide?.estimation?.currencyCode ?? "")")
                             .font(.footnote)
                             .fontWeight(.semibold)
-                        Text("cash")
+                        Text(locationViewModel.selectedPaymentMethod ?? "")
                             .font(.footnote)
                             .fontWeight(.semibold)
                     }
@@ -90,7 +100,7 @@ struct RideCompletedSheetView: View {
                     buttonHorizontalMargins: 0,
                     cornerRadius: 8
                 ) {
-                    navigationPath.append("RateDriverView")
+                    locationViewModel.navigationPath.append("RateDriverView")
                 }
             }
             .padding(.horizontal,20)
@@ -111,7 +121,7 @@ struct RideCompletedSheetView: View {
                 .padding(.bottom, 20)
                 .padding(.horizontal,20)
             Button{
-                navigationPath = []
+                locationViewModel.navigationPath = []
             }label: {
                 Text("close")
                     .font(.body)
@@ -130,5 +140,5 @@ struct RideCompletedSheetView: View {
 }
 
 #Preview {
-    RideCompletedSheetView(navigationPath: .constant([]))
+    RideCompletedSheetView(viewModel: RideViewModel(), locationViewModel: LocationSelectingViewModel())
 }

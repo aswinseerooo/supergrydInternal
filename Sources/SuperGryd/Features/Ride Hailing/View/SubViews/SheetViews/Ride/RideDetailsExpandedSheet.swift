@@ -9,13 +9,12 @@ import SwiftUI
 
 struct RideDetailsExpandedSheet: View {
     @Environment(\.colorScheme) var colorScheme
-    @State private var rating: Int = 4
-    @Binding var isCancelClicked: Bool
+    @ObservedObject var viewModel: RideViewModel
+    @ObservedObject var locationViewModel: LocationSelectingViewModel
     private let maxRating = 5
     private let unselectedImage = Image("ratingUnselected", bundle: Bundle.module)
     private let selectedImage = Image("ratingSelected", bundle: Bundle.module)
-    let tripInfo: TripInfoModel
-    let driverInfo: DriverInfoModel
+
     
     var body: some View {
         VStack{
@@ -32,14 +31,17 @@ struct RideDetailsExpandedSheet: View {
                     .padding(.horizontal, 20)
                 
                 HStack() {
-                    Image(driverInfo.driverImage,bundle: Bundle.module)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 80, height: 80)
-                        .clipShape(Circle())
-                    
+                    AsyncImage(url: URL(string: viewModel.rideTrackingResponse?.driverDetails?.pictureURL ?? "")) { image in
+                        image
+                            .resizable() // Ensure the image is resizable
+                            .scaledToFit() // Scale the image to fit within the frame
+                    } placeholder: {
+                        ProgressView() // Optional placeholder while the image is loading
+                    }
+                    .frame(width: 80, height: 80)
+                    .clipShape(Circle())
                     VStack(alignment: .leading){
-                        Text(driverInfo.driverName)
+                        Text(viewModel.rideTrackingResponse?.driverDetails?.name ?? "")
                             .font(.headline)
                             .lineLimit(1)
                             .padding(.bottom,1)
@@ -54,11 +56,11 @@ struct RideDetailsExpandedSheet: View {
                             .lineLimit(1)
                         HStack(spacing: 8) {
                             ForEach(1...maxRating, id: \.self) { starIndex in
-                                (starIndex <= rating ? selectedImage : unselectedImage)
+                                (starIndex <= Int(viewModel.rideTrackingResponse?.driverDetails?.rating ?? 0) ? selectedImage : unselectedImage)
                                     .resizable()
                                     .frame(width: 10, height: 10)
                             }
-                            Text("\(rating).0")
+                            Text("\(viewModel.rideTrackingResponse?.driverDetails?.rating ?? 0, specifier: "%.1f")")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
@@ -71,19 +73,17 @@ struct RideDetailsExpandedSheet: View {
                 Divider()
                     .padding(.horizontal, 20)
                     .padding(.bottom,8)
-                RideInfoItemView(distance: "21 km", time: "8 min", price: "$8.00")
+                RideInfoItemView(
+                    distance: Text("\(locationViewModel.selectedRide?.estimation?.distance ?? 0.0, specifier: "%.2f")"),
+                    time: Text("\((locationViewModel.selectedRide?.estimation?.duration ?? 0) / 60) min"),
+                    price: Text("\(locationViewModel.selectedRide?.estimation?.estimate ?? 0, specifier: "%.2f")"))
                     .padding(.horizontal, 40)
                 Divider()
                     .padding(.horizontal, 20)
                     .padding(.top,8)
-//                RideSelectionTile(
-//                    rideOption: rideOptionsMockData[0],
-//                    isSelected: true,
-//                    isRideDetailView: true
-//                )
                 Divider()
                     .padding(.horizontal, 20)
-                PickupDropoffStepperView(fromLocation: .constant("Sonnenweg 32, 79669 Berlin, Germany"), toLocation: .constant("St.-Martin-Straße 14, 93099 Berlin,Germany"))
+                PickupDropoffStepperView(fromLocation: .constant(locationViewModel.fromLocation), toLocation: .constant(locationViewModel.toLocation))
                 Divider()
                     .padding(.horizontal, 20)
                     .padding(.bottom,8)
@@ -99,9 +99,9 @@ struct RideDetailsExpandedSheet: View {
                     }
                     Spacer()
                     VStack(alignment: .trailing){
-                        Text("cash")
+                        Text(locationViewModel.selectedPaymentMethod ?? "cash")
                             .font(.callout)
-                        Text("$8.00")
+                        Text("\(locationViewModel.selectedRide?.estimation?.estimate ?? 0, specifier: "%.2f") \(locationViewModel.selectedRide?.estimation?.currencyCode ?? "")")
                             .font(.callout)
                             .padding(.vertical,2)
                     }
@@ -117,7 +117,7 @@ struct RideDetailsExpandedSheet: View {
                         foregroundColor: Color(hex: "#663A80"),
                         buttonHorizontalMargins: 0
                     ) {
-                        isCancelClicked = true
+                        viewModel.isCancelClicked = true
                     }
 //                    Image("Message", bundle: Bundle.module)
                     Image("Call", bundle: Bundle.module)
@@ -135,5 +135,5 @@ struct RideDetailsExpandedSheet: View {
 }
 
 #Preview {
-    RideDetailsExpandedSheet(isCancelClicked: .constant(false), tripInfo: tripInfoMockData, driverInfo: driverInfoMockData)
+    RideDetailsExpandedSheet(viewModel: RideViewModel(), locationViewModel: LocationSelectingViewModel())
 }

@@ -6,11 +6,12 @@
 //
 
 import Alamofire
+import Foundation
 
 class RideHailingServiceImpl {
     static let shared = RideHailingServiceImpl()
     private init() {}
-    
+    private var otp: Int? = nil
     // New function to request ride price estimate
     func requestPriceEstimate(
         startLocation: (lat: Double, long: Double),
@@ -19,13 +20,11 @@ class RideHailingServiceImpl {
     ) {
         // URL for price estimate
         let url = "\(AppConstants.baseURL)ride-hail/ride-request-price-estimate"
-        print("URL =", url)
         // Headers
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(AppConstants.accessToken)",
             "Content-Type": "application/json"
         ]
-        print("headers =", headers)
         // Request body
         let parameters: [String: Any] = [
             "start_location": [
@@ -37,7 +36,6 @@ class RideHailingServiceImpl {
                 "long": endLocation.long
             ]
         ]
-        print("parameters =", parameters)
         // Make the API request using the generalized APIService
         APIService.shared.request(
             url: url,
@@ -48,7 +46,6 @@ class RideHailingServiceImpl {
         ) { result in
             switch result {
             case .success(let priceEstimateResponse):
-                print("Price Estimate Successful: \(priceEstimateResponse)")
                 completion(.success(priceEstimateResponse))
             case .failure(let error):
                 print("Price Estimate Failed: \(error.localizedDescription)")
@@ -174,6 +171,58 @@ class RideHailingServiceImpl {
                 completion(.success(cancelResponse))
             case .failure(let error):
                 print("Ride Cancellation Failed: \(error.localizedDescription)")
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func trackRide(
+        requestId: Int,
+        otp: Int? = nil,
+        completion: @escaping (Result<RideTrackingResponse, Error>) -> Void
+    ) {
+        // Base URL
+        var urlComponents = URLComponents(string: "\(AppConstants.cabURL)booking/track-ride")!
+        // Query parameters
+        var queryItems = [URLQueryItem(name: "request_id", value: String(requestId))]
+        if let otp = otp {
+            queryItems.append(URLQueryItem(name: "otp", value: String(otp)))
+        }
+        urlComponents.queryItems = queryItems
+        
+        guard let url = urlComponents.url else {
+            completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
+            return
+        }
+       
+        // Make the API request
+        APIService.shared.request(
+            url: url.absoluteString,
+            method: .get,
+            responseType: RideTrackingResponse.self
+        ) { result in
+            switch result {
+            case .success(let trackingResponse):
+                completion(.success(trackingResponse))
+                // Check the ride status and call recursively if needed
+                if let otpValue = trackingResponse.otp, self.otp == nil {
+                    self.otp = otpValue
+                }
+                if trackingResponse.rideStatus == 6 {
+                    print("Ride Completed: \(trackingResponse)")
+                } else if trackingResponse.rideStatus == 3 {
+                    // Include OTP in the next call
+                    DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
+                        self.trackRide(requestId: requestId, otp: self.otp, completion: completion)
+                    }
+                } else {
+                    // Continue polling without OTP
+                    DispatchQueue.global().asyncAfter(deadline: .now() + 2) { // Adjust interval as needed
+                        self.trackRide(requestId: requestId, completion: completion)
+                    }
+                }
+            case .failure(let error):
+                print("Tracking Ride Failed: \(error.localizedDescription)")
                 completion(.failure(error))
             }
         }

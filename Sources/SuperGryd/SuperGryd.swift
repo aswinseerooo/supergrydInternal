@@ -18,7 +18,7 @@ public class SuperGryd {
         // Perform authentication logic here (e.g., API call)
         
         // Create SwiftUI view
-        let homeView = LocationSelectingView()
+        let homeView = LocationSelectingViewWrapper()
         
         // Create a UIHostingController to wrap the SwiftUI view
         let hostingController = UIHostingController(rootView: homeView)

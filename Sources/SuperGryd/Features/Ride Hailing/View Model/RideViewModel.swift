@@ -24,19 +24,30 @@ class RideViewModel: ObservableObject {
     @Published var cancelReasons: [CancelReasonData] = []
     @Published var bookRideResponse: RideBookingResponse?
     @Published var selectedCancelReason: CancelReasonData?
-    
+    @Published var rideTrackingResponse: RideTrackingResponse?
+    @Published var otp: Int?
+    @Published var currentTime: String?
+    @Published var currentDate: String?
+    @Published var fromLocation: CLLocationCoordinate2D?
+    @Published var toLocation: CLLocationCoordinate2D?
+    @Published var initialDriverLocation: CLLocationCoordinate2D?
+    @Published var currentDriverLocation: CLLocationCoordinate2D?
     
     let driverInfo = driverInfoMockData
     let tripInfo = tripInfoMockData
     
     // Lifecycle Methods
     func onAppear(rideRequest : RideBookingRequest) {
-        bookRide(rideRequest: rideRequest)
-        fetchCancelReasons()
+        if isFindingRide {
+            bookRide(rideRequest: rideRequest)
+            fetchCancelReasons()
+        }
     }
     
     private func bookRide(rideRequest: RideBookingRequest) {
         let rideService = RideHailingServiceImpl.shared
+        fromLocation = CLLocationCoordinate2DMake(rideRequest.startLocation.lat, rideRequest.startLocation.long)
+        toLocation = CLLocationCoordinate2DMake(rideRequest.endLocation.lat, rideRequest.endLocation.long)
         rideService.bookRide(
             firstName: rideRequest.firstName,
             lastName: rideRequest.lastName,
@@ -60,13 +71,57 @@ class RideViewModel: ObservableObject {
             switch result {
             case .success(let response):
                 self.bookRideResponse = response
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
-                    guard let self = self else { return }
-                    if self.isFindingRide {
-                        self.isFindingRide = false
-                        self.isDriverAccepted = true
-                        self.titleText = "pick_up_in_6_min".localized()
-                        simulateRideProgress()
+                DispatchQueue.global().asyncAfter(deadline: .now() + 4) {
+                    rideService.trackRide(requestId: response.data?.requestedID ?? 0) { result in
+                        switch result {
+                        case .success(let response):
+                            self.rideTrackingResponse = response
+                            if self.initialDriverLocation == nil {
+                                print("Driver Initial Location is nil")
+                                self.initialDriverLocation = CLLocationCoordinate2D(latitude: Double(response.driverLat ?? "0") ?? 0, longitude: Double(response.driverLng ?? "0") ?? 0)
+                            }
+                            self.currentDriverLocation = CLLocationCoordinate2D(latitude: Double(response.driverLat ?? "0") ?? 0, longitude: Double(response.driverLng ?? "0") ?? 0)
+                            if let otpValue = response.otp, self.otp == nil {
+                                self.otp = otpValue
+                            }
+                            switch response.rideStatus {
+                            case 1:
+                                self.isFindingRide = false
+                                self.isDriverAccepted = true
+                                self.titleText = "pick_up_in_6_min".localized()
+                                
+                            case 2:
+                                self.titleText = "your_ride_is_on_the_way".localized()
+                                
+                            case 3:
+                                self.titleText = "your_ride_is_here".localized()
+                                
+                            case 4, 5:
+                                self.isDriverAccepted = false
+                                self.isDriverPickedUp = true
+                                
+                            default:
+                                self.isDriverPickedUp = false
+                                self.isRideCompleted = true
+                                
+                                // Capture current date and time
+                                let currentDate = Date()
+                                let timeFormatter = DateFormatter()
+                                timeFormatter.dateFormat = "hh:mma" // Format for time, e.g., 07:48AM
+                                let timeString = timeFormatter.string(from: currentDate)
+                                
+                                let dateFormatter = DateFormatter()
+                                dateFormatter.dateFormat = "dd MMM yyyy" // Format for date, e.g., 28 Nov 2024
+                                let dateString = dateFormatter.string(from: currentDate)
+                                
+                                // Save the formatted time and date
+                                self.currentTime = timeString
+                                self.currentDate = dateString
+                            }
+                            
+                        case .failure(let error):
+                            print("Error Tracking Ride: \(error.localizedDescription)")
+                        }
                     }
                 }
             case .failure(let error):
@@ -82,47 +137,10 @@ class RideViewModel: ObservableObject {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let reasons):
-                        self.cancelReasons = reasons.data ?? []
+                    self.cancelReasons = reasons.data ?? []
                 case .failure(let error):
                     print("Failed to fetch cancel reasons: \(error.localizedDescription)")
                 }
-            }
-        }
-    }
-
-    
-    // Simulate ride progress
-    private func simulateRideProgress() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 6) { [weak self] in
-            if self?.isDriverAccepted == true {
-                self?.titleText = "your_ride_is_on_the_way".localized()
-            }
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 9) { [weak self] in
-            if self?.isDriverAccepted == true {
-                self?.titleText = "your_ride_is_here".localized()
-            }
-        }
-    }
-    
-    // Handle driver acceptance
-    func handleDriverAccepted() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
-            guard let self = self else { return }
-            if self.isDriverAccepted {
-                self.isDriverAccepted = false
-                self.isDriverPickedUp = true
-            }
-        }
-    }
-    
-    // Handle driver pickup
-    func handleDriverPickedUp() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 8) { [weak self] in
-            guard let self = self else { return }
-            if self.isDriverPickedUp {
-                self.isDriverPickedUp = false
-                self.isRideCompleted = true
             }
         }
     }
@@ -133,10 +151,9 @@ class RideViewModel: ObservableObject {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let cancelStatus):
-                    print("Cancel Status = ", cancelStatus.message as Any)
-                        completion(true)
+                    completion(true)
                 case .failure(let error):
-                    print("Failed to fetch cancel reasons: \(error.localizedDescription)")
+                    print("Failed to cancel ride reasons: \(error.localizedDescription)")
                 }
             }
         }

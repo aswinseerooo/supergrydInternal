@@ -9,12 +9,12 @@ import SwiftUI
 
 struct RideInfoSingleItemView: View {
     let imageName: String
-    let text: String
+    let text: Text
 
     var body: some View {
         HStack(spacing: 4) {
             Image(imageName, bundle: Bundle.module)
-            Text(text)
+            text
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -22,5 +22,5 @@ struct RideInfoSingleItemView: View {
 }
 
 #Preview {
-    RideInfoSingleItemView(imageName: "", text: "")
+    RideInfoSingleItemView(imageName: "", text: Text(""))
 }

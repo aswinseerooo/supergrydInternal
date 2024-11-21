@@ -9,7 +9,8 @@ import SwiftUI
 
 struct FindingRideSheet: View {
     @Environment(\.colorScheme) var colorScheme
-    @Binding var isCancelClicked: Bool
+    @ObservedObject var viewModel: RideViewModel
+    @ObservedObject var locationViewModel: LocationSelectingViewModel
     var body: some View {
         VStack() {
             // Display total distance covered
@@ -33,7 +34,7 @@ struct FindingRideSheet: View {
                     Text("pick_up")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text("Sonnenweg 32, 79669 Berlin, Germany")
+                    Text(locationViewModel.fromLocation)
                         .font(.caption)
                         .fontWeight( .semibold)
                         .lineLimit(1)
@@ -49,7 +50,7 @@ struct FindingRideSheet: View {
                     Text("drop_off")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text("St.-Martin-Straße 14, 93099 Berlin,Germany")
+                    Text(locationViewModel.toLocation)
                         .font(.caption)
                         .fontWeight( .semibold)
                         .lineLimit(1)
@@ -62,10 +63,10 @@ struct FindingRideSheet: View {
                 Image("dollarCircle", bundle: Bundle.module)
                     .padding(.horizontal)
                 VStack(alignment: .leading){
-                    Text("$8.00")
+                    Text("\(locationViewModel.selectedRide?.estimation?.estimate ?? 0, specifier: "%.2f") \(locationViewModel.selectedRide?.estimation?.currencyCode ?? "")")
                         .font(.caption)
                         .fontWeight( .semibold)
-                    Text("cash")
+                    Text(locationViewModel.selectedPaymentMethod ?? "")
                         .font(.caption)
                         .foregroundStyle(Color(hex: "#1B4C31"))
                 }
@@ -78,7 +79,7 @@ struct FindingRideSheet: View {
                 backgroundColor: Color.white,
                 foregroundColor: Color(hex: "#663A80")
             ) {
-                isCancelClicked = true
+                viewModel.isCancelClicked = true
             }
             .padding(.bottom)
         }
@@ -89,6 +90,6 @@ struct FindingRideSheet: View {
 }
 
 #Preview {
-    FindingRideSheet(isCancelClicked: .constant(true))
+    FindingRideSheet(viewModel: RideViewModel(), locationViewModel: LocationSelectingViewModel())
 }
 

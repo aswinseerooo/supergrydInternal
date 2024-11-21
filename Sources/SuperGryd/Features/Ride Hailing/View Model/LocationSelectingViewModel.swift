@@ -33,6 +33,7 @@ class LocationSelectingViewModel: ObservableObject {
     
     @Published var suggestions: [AutoCompleteSuggestion] = []
     @Published var selectedRide: RideOption?
+    @Published var selectedPaymentMethod: String?
     
     var backAction: () -> Void = {}
     var dismissAction: (() -> Void)?

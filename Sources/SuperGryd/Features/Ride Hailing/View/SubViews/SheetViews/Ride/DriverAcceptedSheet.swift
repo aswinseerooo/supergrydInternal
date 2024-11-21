@@ -9,11 +9,7 @@ import SwiftUI
 
 struct DriverAcceptedSheet: View {
     @Environment(\.colorScheme) var colorScheme
-    @Binding var isCancelClicked: Bool
-    @Binding var isDriverPickedUp: Bool
-    let tripInfo: TripInfoModel
-    let driverInfo: DriverInfoModel
-    @Binding var title: String
+    @ObservedObject var viewModel: RideViewModel
     var body: some View {
         VStack() {
             // Display total distance covered
@@ -21,8 +17,8 @@ struct DriverAcceptedSheet: View {
                 .frame(width: 50,height: 5)
                 .foregroundStyle(Color(hex: "#F1F5F9"))
                 .padding()
-            if !isDriverPickedUp {
-                Text(title)
+            if !viewModel.isDriverPickedUp {
+                Text(viewModel.titleText)
                    .font(.title3)
                    .fontWeight(.bold)
                Divider()
@@ -30,7 +26,7 @@ struct DriverAcceptedSheet: View {
                    .padding(.vertical,8)
             }
             HStack{
-                if isDriverPickedUp {
+                if viewModel.isDriverPickedUp {
                     Text("ongoing_ride")
                         .font(.title3)
                         .fontWeight(.bold)
@@ -42,12 +38,15 @@ struct DriverAcceptedSheet: View {
                     Text("pin_for_this_trip")
                         .font(.subheadline)
                     Spacer()
-                    ForEach(tripInfo.tripPin, id: \.self) { pinDigit in
-                        Rectangle()
-                            .foregroundStyle(Color(hex: "#663A80"))
-                            .frame(width: 30, height: 35)
-                            .overlay(Text("\(pinDigit)").foregroundStyle(.white))
-                            .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 5)
+                    if let otp = viewModel.otp {
+                        let otpDigits = String(otp).compactMap { Int(String($0)) }
+                        ForEach(otpDigits, id: \.self) { pinDigit in
+                            Rectangle()
+                                .foregroundStyle(Color(hex: "#663A80"))
+                                .frame(width: 30, height: 35)
+                                .overlay(Text("\(pinDigit)").foregroundStyle(.white))
+                                .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 5)
+                        }
                     }
                 }
             }
@@ -57,29 +56,38 @@ struct DriverAcceptedSheet: View {
                 .padding(.vertical,8)
             HStack() {
                 ZStack(alignment: .bottom){
-                    Image(driverInfo.vehicleImage,bundle: Bundle.module)
-                        .resizable()
+                    AsyncImage(url: URL(string: viewModel.rideTrackingResponse?.vehicle?.pictureURL ?? "")) { image in
+                        image
+                            .resizable() // Ensure the image is resizable
+                            .scaledToFit() // Scale the image to fit within the frame
+                    } placeholder: {
+                        ProgressView() // Optional placeholder while the image is loading
+                    }
                         .scaledToFit()
                         .frame(width: 100, height: 100,alignment: .bottom)
                         .offset(x:65)
                     
-                    Image(driverInfo.driverImage,bundle: Bundle.module)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 100, height: 100)
-                        .clipShape(Circle())
+                    AsyncImage(url: URL(string: viewModel.rideTrackingResponse?.driverDetails?.pictureURL ?? "")) { image in
+                        image
+                            .resizable() // Ensure the image is resizable
+                            .scaledToFit() // Scale the image to fit within the frame
+                    } placeholder: {
+                        ProgressView() // Optional placeholder while the image is loading
+                    }
+                    .frame(width: 100, height: 100)
+                    .clipShape(Circle())
                 }
                 Spacer()
                 VStack(alignment: .trailing){
-                    Text(driverInfo.driverName)
+                    Text(viewModel.rideTrackingResponse?.driverDetails?.name ?? "")
                         .font(.headline)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
-                    Text(driverInfo.vehicleNumber)
+                    Text(viewModel.rideTrackingResponse?.vehicle?.licensePlate ?? "")
                         .font(.headline)
                         .lineLimit(1)
                         .padding(.bottom,2)
-                    Text(driverInfo.vehicleDescription)
+                    Text("\(viewModel.rideTrackingResponse?.vehicle?.make ?? "") \(viewModel.rideTrackingResponse?.vehicle?.model ?? "")")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
@@ -96,9 +104,9 @@ struct DriverAcceptedSheet: View {
                     foregroundColor: Color(hex: "#663A80"),
                     buttonHorizontalMargins: 0
                 ) {
-                    isCancelClicked = true
+                    viewModel.isCancelClicked = true
                 }
-                if !isDriverPickedUp {
+                if !viewModel.isDriverPickedUp {
 //                    Image("Message", bundle: Bundle.module)
                     Image("Call", bundle: Bundle.module)
                         .padding(.leading)
@@ -114,5 +122,5 @@ struct DriverAcceptedSheet: View {
 }
 
 #Preview {
-    DriverAcceptedSheet(isCancelClicked: .constant(false), isDriverPickedUp: .constant(false), tripInfo: tripInfoMockData, driverInfo: driverInfoMockData, title: .constant("pick_up_in_6_min".localized()))
+    DriverAcceptedSheet(viewModel: RideViewModel())
 }
